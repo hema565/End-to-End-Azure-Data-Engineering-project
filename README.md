@@ -19,7 +19,7 @@ Models data using a star schema
 Powers real-time and historical BI dashboards
 
 ## Architecture
-![Architecture](Architecture/Architecture Diagram.png)
+![Architecture diagram](Architecture/Architecture Diagram.png)
 🏗️ Architecture Highlights
 
 Sources: OLTP SQL DB (Users, Orders, Payments), REST APIs, Event Hub
@@ -65,8 +65,6 @@ The generated data was inserted into an Azure SQL Database, acting as the OLTP s
 Ingestion:
 Azure Data Factory pulls data incrementally from the SQL database using CDC / watermark-based ingestion into the Lakehouse Bronze layer.
 
-👉 [View Dataset Folder](Datasets/oltp_transactional)
-
 2️⃣ Currency Exchange Data (REST API)
 
 Source:
@@ -78,8 +76,6 @@ Exchange rates are used to normalize multi-currency payment amounts into a base 
 Ingestion Method:
 Azure Data Factory performs date-based incremental API ingestion, storing raw responses in the Bronze layer before refinement in Silver.
 
-👉 [View Dataset Folder](currency_exchange_rate)
-
 3️⃣ Real-Time Events (Azure Event Hub)
 
 Event Generation:
@@ -90,8 +86,6 @@ Events are pushed to Azure Event Hub to mimic live payment processing systems.
 
 Consumption:
 Databricks Structured Streaming reads events from Event Hub and ingests them into the Bronze layer for near real-time processing
-
-👉 [View Dataset Folder](eventhub)
 
 ## Data model
 
