@@ -19,7 +19,7 @@ Models data using a star schema
 Powers real-time and historical BI dashboards
 
 ## Architecture
-![Architecture diagram](Architecture/Architecture Diagram.png)
+![Architecture Diagram](Architecture/Architecture_Diagram.png)
 🏗️ Architecture Highlights
 
 Sources: OLTP SQL DB (Users, Orders, Payments), REST APIs, Event Hub
