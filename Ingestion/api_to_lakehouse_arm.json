@@ -1,0 +1,195 @@
+{
+    "name": "currencyRestapi",
+    "properties": {
+        "activities": [
+            {
+                "name": "loop engine",
+                "type": "Until",
+                "dependsOn": [
+                    {
+                        "activity": "loop controller trough date",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@greater(variables('v_currentDate'),pipeline().parameters.p_endDate)",
+                        "type": "Expression"
+                    },
+                    "activities": [
+                        {
+                            "name": "Api call to datalake",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "RestSource",
+                                    "httpRequestTimeout": "00:01:40",
+                                    "requestInterval": "00.00:00:00.010",
+                                    "requestMethod": "GET",
+                                    "paginationRules": {
+                                        "supportRFC5988": "true"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "JsonSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings"
+                                    },
+                                    "formatSettings": {
+                                        "type": "JsonWriteSettings"
+                                    }
+                                },
+                                "enableStaging": false
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "RestResource_ds",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "p_date": {
+                                            "value": "@variables('v_currentDate')",
+                                            "type": "Expression"
+                                        },
+                                        "p_from": {
+                                            "value": "@pipeline().parameters.p_from",
+                                            "type": "Expression"
+                                        },
+                                        "p_to": {
+                                            "value": "@pipeline().parameters.p_to",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "ApiJson",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "p_date": {
+                                            "value": "@variables('v_currentDate')",
+                                            "type": "Expression"
+                                        },
+                                        "p_from": {
+                                            "value": "@pipeline().parameters.p_from",
+                                            "type": "Expression"
+                                        },
+                                        "p_to": {
+                                            "value": "@pipeline().parameters.p_to",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "increment Date",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Api call to datalake",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "v_nextDate",
+                                "value": {
+                                    "value": "@formatDateTime(addDays(variables('v_currentDate'), 1),'yyyy-MM-dd')",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "currentDate Update",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "increment Date",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "v_currentDate",
+                                "value": {
+                                    "value": "@variables('v_nextDate')",
+                                    "type": "Expression"
+                                }
+                            }
+                        }
+                    ],
+                    "timeout": "0.12:00:00"
+                }
+            },
+            {
+                "name": "loop controller trough date",
+                "type": "SetVariable",
+                "dependsOn": [],
+                "policy": {
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "variableName": "v_currentDate",
+                    "value": {
+                        "value": "@pipeline().parameters.p_startDate",
+                        "type": "Expression"
+                    }
+                }
+            }
+        ],
+        "parameters": {
+            "p_startDate": {
+                "type": "string",
+                "defaultValue": "2025-06-01"
+            },
+            "p_endDate": {
+                "type": "string",
+                "defaultValue": "2025-12-31"
+            },
+            "p_from": {
+                "type": "string",
+                "defaultValue": "USD"
+            },
+            "p_to": {
+                "type": "string",
+                "defaultValue": "INR"
+            }
+        },
+        "variables": {
+            "v_currentDate": {
+                "type": "String"
+            },
+            "v_nextDate": {
+                "type": "String"
+            }
+        },
+        "annotations": []
+    }
+}
